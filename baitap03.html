@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eisenhower Matrix - Final Logic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <aside class="col-info">
+            <div class="profile-section">
+                <img src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
+                <h2 class="student-name">Nguyễn Văn Thanh Diệp</h2>
+                <p class="student-id">MSSV: 231A010165 <span id="displayMSSV"></span></p>
+            </div>
+
+            <div class="input-group">
+                <label>Tên công việc:</label>
+                <input type="text" id="taskInput" class="form-control" placeholder="Nhập tên task...">
+                
+                <label>Độ ưu tiên:</label>
+                <select id="priorityInput" class="form-control">
+                    <option value="1">1. Quan trọng & Khẩn cấp (Làm ngay)</option>
+                    <option value="2">2. Quan trọng - Không khẩn (Lên lịch)</option>
+                    <option value="3">3. K.Quan trọng - Khẩn cấp (Giao việc)</option>
+                    <option value="4">4. K.Quan trọng - K.Khẩn (Xóa/Giải trí)</option>
+                </select>
+
+                <button class="btn-add" onclick="addTask()">THÊM CÔNG VIỆC</button>
+            </div>
+        </aside>
+
+        <main class="col-taskboard">
+            <div class="matrix-container">
+                <div class="axis-label"></div>
+                <div class="axis-label axis-top">KHẨN CẤP</div>
+                <div class="axis-label axis-top">ÍT KHẨN CẤP</div>
+                <div class="axis-label axis-side">QUAN TRỌNG</div>
+                
+                <div class="quadrant bg-do">
+                    <div class="box-header">
+                        <i class="fa-solid fa-briefcase"></i> 
+                    </div>
+                    <ul class="task-list" id="list-1"></ul> </div>
+
+                <div class="quadrant bg-schedule">
+                    <div class="box-header">
+                        <i class="fa-regular fa-calendar-check"></i> 
+                    </div>
+                    <ul class="task-list" id="list-2"></ul>
+                </div>
+
+                <div class="axis-label axis-side">KÉM QUAN TRỌNG</div>
+
+                <div class="quadrant bg-delegate">
+                    <div class="box-header">
+                        <i class="fa-solid fa-users-gear"></i> 
+                    </div>
+                    <ul class="task-list" id="list-3"></ul>
+                </div>
+
+                <div class="quadrant bg-delete">
+                    <div class="box-header">
+                        <i class="fa-regular fa-trash-can"></i> >
+                    </div>
+                    <ul class="task-list" id="list-4"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+<div class="chat-container">
+    <div class="chat-header">
+        Chat Support
+        <button class="btn-clear" onclick="clearChat()">Xóa lịch sử</button>
+    </div>
+    <div class="chat-history" id="chatHistory">
+        </div>
+    <div class="chat-input-area">
+        <input type="text" id="msgInput" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Gửi</button>
+    </div>
+</div>
+
+    <script>
+        const CURRENT_MSSV = "231010165";
+        
+        // SỬA LỖI 1: Đổi tên biến để không trùng với Chat
+        const MATRIX_STORAGE_KEY = `tasks_${CURRENT_MSSV}`;
+
+        document.getElementById('displayMSSV').innerText = CURRENT_MSSV;
+
+        let tasks = [];
+
+        // SỬA LỖI 2: Đổi tên hàm init thành initMatrix
+        function initMatrix() {
+            const storedTasks = localStorage.getItem(MATRIX_STORAGE_KEY);
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+            }
+            renderTasks();
+        }
+
+        function getTaskColorClass(taskName) {
+            if (taskName.length > 10) {
+                const lastDigit = parseInt(CURRENT_MSSV.slice(-1));
+                
+                if (lastDigit % 2 === 0) {
+                    return "text-red";
+                } else {
+                    return "text-blue"; 
+                }
+            }
+            return ""; 
+        }
+
+        function addTask() {
+            const nameInput = document.getElementById('taskInput');
+            const priorityInput = document.getElementById('priorityInput');
+            
+            const taskName = nameInput.value.trim();
+            const priority = parseInt(priorityInput.value);
+
+            if (taskName === "") {
+                alert("Vui lòng nhập tên công việc!");
+                return;
+            }
+
+            const newTask = {
+                id: Date.now(), 
+                name: taskName,
+                priority: priority
+            };
+
+            tasks.push(newTask);
+            saveData();
+            
+            nameInput.value = "";
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            if(confirm("Bạn có chắc muốn xóa task này?")) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveData();
+                renderTasks();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(MATRIX_STORAGE_KEY, JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            document.getElementById('list-1').innerHTML = "";
+            document.getElementById('list-2').innerHTML = "";
+            document.getElementById('list-3').innerHTML = "";
+            document.getElementById('list-4').innerHTML = "";
+
+            tasks.forEach(task => {
+                const colorClass = getTaskColorClass(task.name);
+                
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="${colorClass}">${task.name}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+
+                const targetListId = `list-${task.priority}`;
+                document.getElementById(targetListId).appendChild(li);
+            });
+        }
+
+        // ==========================================
+        // 2. LOGIC CHAT BOX
+        // ==========================================
+        
+        // SỬA LỖI 1: Đổi tên biến STORAGE_KEY thành CHAT_STORAGE_KEY
+        const CHAT_STORAGE_KEY = 'chat_history_v1';
+        let messages = []; 
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ':' + 
+                   now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function scrollToBottom() {
+            const chatBox = document.getElementById('chatHistory');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // SỬA LỖI 2: Đổi tên init thành initChat
+        function initChat() {
+            const stored = localStorage.getItem(CHAT_STORAGE_KEY);
+            if (stored) {
+                messages = JSON.parse(stored);
+                renderChat();
+            }
+        }
+
+        function renderChat() {
+            const chatBox = document.getElementById('chatHistory');
+            chatBox.innerHTML = messages.map(msg => `
+                <div class="message ${msg.sender}">
+                    ${escapeHTML(msg.text)} 
+                    <span class="timestamp">${msg.time}</span>
+                </div>
+            `).join('');
+            scrollToBottom();
+        }
+
+        function saveChat() {
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+
+            const userMsg = {
+                id: Date.now(),
+                text: text,
+                sender: 'user',
+                time: getCurrentTime()
+            };
+            
+            messages.push(userMsg);
+            saveChat();
+            renderChat();
+            
+            input.value = ''; 
+            document.getElementById('sendBtn').disabled = true;
+
+            setTimeout(() => {
+                const botMsg = {
+                    id: Date.now() + 1,
+                    text: "Bot: Tôi đã nhận được tin nhắn \"" + text + "\"", 
+                    sender: 'bot',
+                    time: getCurrentTime()
+                };
+
+                messages.push(botMsg);
+                saveChat();
+                renderChat();
+                
+                document.getElementById('sendBtn').disabled = false;
+            }, 2000); 
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function clearChat() {
+            if(confirm('Xóa toàn bộ lịch sử chat?')) {
+                localStorage.removeItem(CHAT_STORAGE_KEY);
+                messages = [];
+                renderChat();
+            }
+        }
+
+        // ==========================================
+        // 3. KHỞI CHẠY CẢ 2 ỨNG DỤNG
+        // ==========================================
+        initMatrix();
+        initChat();
+
+    </script>
+</body>
+</html>
