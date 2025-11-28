@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Chọn Trang 1 hoặc Trang 2</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 40px;
+    text-align: center;
+  }
+  h1 { color: #333; margin-bottom: 40px; }
+  
+  /* Nút chọn trang */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+  .tab-btn {
+    padding: 12px 30px;
+    font-size: 18px;
+    background: white;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .tab-btn.active {
+    background: #007bff;
+    color: white;
+  }
+  
+  /* Nội dung các trang */
+  .page {
+    display: none;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 0 auto;
+    min-height: 400px;
+  }
+  .page.active {
+    display: block;
+    animation: fadeIn 0.5s;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<h1>Chọn trang bạn muốn xem</h1>
+
+<!-- Nút chuyển trang -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showPage(1)">Trang 1</button>
+  <button class="tab-btn" onclick="showPage(2)">Trang 2</button>
+</div>
+
+<!-- Trang 1 -->
+<div id="page1" class="page active">
+  <h2>Đây là Trang 1</h2>
+  <p>Bạn có thể ghi nội dung gì cũng được ở đây.</p>
+  <p>Ví dụ: Danh sách công việc, thông tin cá nhân, ảnh, video...</p>
+  <br>
+  <img src="https://via.placeholder.com/500x300/4CAF50/white?text=Ảnh+Trang+1" alt="Trang 1">
+</div>
+
+<!-- Trang 2 -->
+<div id="page2" class="page">
+  <h2>Chào mừng đến Trang 2</h2>
+  <p>Đây là một trang hoàn toàn khác!</p>
+  <p>Thích thì nhảy qua nhảy lại thoải mái.</p>
+  <br>
+  <img src="https://via.placeholder.com/500x300/FF5722/white?text=Ảnh+Trang+2" alt="Trang 2">
+</div>
+
+<script>
+function showPage(n) {
+  // Ẩn hết các trang
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  
+  // Hiện trang được chọn
+  document.getElementById('page' + n).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>
