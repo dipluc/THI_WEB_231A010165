@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eisenhower Matrix - Final Logic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <aside class="col-info">
+            <div class="profile-section">
+                <img src="https://via.placeholder.com/150" alt="Avatar" class="avatar">
+                <h2 class="student-name">Nguyễn Văn Thanh Diệp</h2>
+                <p class="student-id">MSSV: 231A010165 <span id="displayMSSV"></span></p>
+            </div>
+
+            <div class="input-group">
+                <label>Tên công việc:</label>
+                <input type="text" id="taskInput" class="form-control" placeholder="Nhập tên task...">
+                
+                <label>Độ ưu tiên:</label>
+                <select id="priorityInput" class="form-control">
+                    <option value="1">1. Quan trọng & Khẩn cấp (Làm ngay)</option>
+                    <option value="2">2. Quan trọng - Không khẩn (Lên lịch)</option>
+                    <option value="3">3. K.Quan trọng - Khẩn cấp (Giao việc)</option>
+                    <option value="4">4. K.Quan trọng - K.Khẩn (Xóa/Giải trí)</option>
+                </select>
+
+                <button class="btn-add" onclick="addTask()">THÊM CÔNG VIỆC</button>
+            </div>
+        </aside>
+
+        <main class="col-taskboard">
+            <div class="matrix-container">
+                <div class="axis-label"></div>
+                <div class="axis-label axis-top">KHẨN CẤP</div>
+                <div class="axis-label axis-top">ÍT KHẨN CẤP</div>
+                <div class="axis-label axis-side">QUAN TRỌNG</div>
+                
+                <div class="quadrant bg-do">
+                    <div class="box-header">
+                        <i class="fa-solid fa-briefcase"></i> 
+                    </div>
+                    <ul class="task-list" id="list-1"></ul> </div>
+
+                <div class="quadrant bg-schedule">
+                    <div class="box-header">
+                        <i class="fa-regular fa-calendar-check"></i> 
+                    </div>
+                    <ul class="task-list" id="list-2"></ul>
+                </div>
+
+                <div class="axis-label axis-side">KÉM QUAN TRỌNG</div>
+
+                <div class="quadrant bg-delegate">
+                    <div class="box-header">
+                        <i class="fa-solid fa-users-gear"></i> 
+                    </div>
+                    <ul class="task-list" id="list-3"></ul>
+                </div>
+
+                <div class="quadrant bg-delete">
+                    <div class="box-header">
+                        <i class="fa-regular fa-trash-can"></i> >
+                    </div>
+                    <ul class="task-list" id="list-4"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const CURRENT_MSSV = "231010165";
+        
+        const STORAGE_KEY = `tasks_${CURRENT_MSSV}`;
+
+        document.getElementById('displayMSSV').innerText = CURRENT_MSSV;
+
+        let tasks = [];
+
+        function init() {
+            const storedTasks = localStorage.getItem(STORAGE_KEY);
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+            }
+            renderTasks();
+        }
+
+        function getTaskColorClass(taskName) {
+            if (taskName.length > 10) {
+                const lastDigit = parseInt(CURRENT_MSSV.slice(-1));
+                
+                if (lastDigit % 2 === 0) {
+                    return "text-red";
+                } else {
+                    return "text-blue"; 
+                }
+            }
+            return ""; 
+        }
+
+        function addTask() {
+            const nameInput = document.getElementById('taskInput');
+            const priorityInput = document.getElementById('priorityInput');
+            
+            const taskName = nameInput.value.trim();
+            const priority = parseInt(priorityInput.value);
+
+            if (taskName === "") {
+                alert("Vui lòng nhập tên công việc!");
+                return;
+            }
+
+            const newTask = {
+                id: Date.now(), 
+                name: taskName,
+                priority: priority
+            };
+
+            tasks.push(newTask);
+            saveData();
+            
+            nameInput.value = "";
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            if(confirm("Bạn có chắc muốn xóa task này?")) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveData();
+                renderTasks();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            document.getElementById('list-1').innerHTML = "";
+            document.getElementById('list-2').innerHTML = "";
+            document.getElementById('list-3').innerHTML = "";
+            document.getElementById('list-4').innerHTML = "";
+
+            tasks.forEach(task => {
+                const colorClass = getTaskColorClass(task.name);
+                
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span class="${colorClass}">${task.name}</span>
+                    <button class="delete-btn" onclick="deleteTask(${task.id})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+
+                const targetListId = `list-${task.priority}`;
+                document.getElementById(targetListId).appendChild(li);
+            });
+        }
+        init();
+
+    </script>
+</body>
+</html>

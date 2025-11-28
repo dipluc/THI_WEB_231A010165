@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Đoán số 1-100</title>
+<style>
+  body{
+    font-family: system-ui, sans-serif;
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    margin:0;
+    background:#f0f0f0;
+  }
+  .box{
+    text-align:center;
+    background:white;
+    padding:40px;
+    border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    min-width:300px;
+  }
+  input{
+    width:100px;
+    padding:12px;
+    font-size:20px;
+    text-align:center;
+    margin:10px 0;
+  }
+  button{
+    padding:12px 24px;
+    font-size:16px;
+    cursor:pointer;
+  }
+  .msg{font-size:22px; margin:20px 0; min-height:50px;}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Đoán số (1-100)</h2>
+  <input type="number" id="num" min="1" max="100" autofocus>
+  <br>
+  <button onclick="check()">Đoán</button>
+  <div class="msg" id="msg"></div>
+  <div>Lần đoán: <span id="count">0</span></div>
+  <button onclick="reset()" id="again" style="display:none;margin-top:20px">Chơi lại</button>
+</div>
+
+<script>
+let target = Math.floor(Math.random()*100)+1;
+let tries = 0;
+
+function check(){
+  let guess = +document.getElementById("num").value;
+  let msg = document.getElementById("msg");
+  tries++;
+  document.getElementById("count").textContent = tries;
+
+  if(!guess || guess<1 || guess>100){
+    msg.textContent = "Nhập số từ 1 đến 100!";
+    return;
+  }
+
+  if(guess < target) msg.textContent = "Quá thấp ↑";
+  else if(guess > target) msg.textContent = "Quá cao ↓";
+  else {
+    msg.innerHTML = `Chính xác! Chỉ ${tries} lần 🎉`;
+    document.getElementById("num").disabled = true;
+    document.getElementById("again").style.display = "inline";
+    confetti();
+  }
+  
+  document.getElementById("num").value = "";
+}
+
+function reset(){
+  target = Math.floor(Math.random()*100)+1;
+  tries = 0;
+  document.getElementById("count").textContent = "0";
+  document.getElementById("msg").textContent = "";
+  document.getElementById("num").disabled = false;
+  document.getElementById("again").style.display = "none";
+  document.getElementById("num").focus();
+}
+
+function confetti(){
+  const c = document.createElement("canvas");
+  c.style.position="fixed"; c.style.inset="0"; c.style.pointerEvents="none"; c.style.zIndex="9999";
+  document.body.appendChild(c);
+  const ctx = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight;
+  let p=[];
+  for(let i=0;i<200;i++){
+    p.push({
+      x:Math.random()*c.width,
+      y:Math.random()*c.height-100,
+      s:3+Math.random()*5,
+      color:`hsl(${Math.random()*360},100%,50%)`,
+      r:Math.random()*4
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    p.forEach(e=>{
+      ctx.fillStyle=e.color;
+      ctx.fillRect(e.x,e.y,e.s,e.s);
+      e.y += e.r+3;
+      e.x += Math.sin(e.y/20)*3;
+      if(e.y>c.height) e.y=-10;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+  setTimeout(()=>c.remove(),4000);
+}
+
+document.getElementById("num").addEventListener("keypress", e=> e.key==="Enter"&&check());
+</script>
+</body>
+</html>
